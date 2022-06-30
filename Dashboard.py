@@ -2,7 +2,7 @@
 """
 Created on Mon Feb 21 13:28:52 2022
 
-@author: estas
+@author: Enrico Spelling Mat.Nr. 572730
 """
 
 import dash
@@ -14,11 +14,12 @@ import pandas as pd
 import plotly.express as px
 import datetime
 from datetime import date
+from plotly.subplots import make_subplots
 
 
 # Data Import
 df_TS_world = pd.read_csv('dashboard_time_series_complete.csv', index_col=0)
-
+print(df_TS_world.columns)
 # Spalten umbenennen
 df_TS_world = df_TS_world.rename(columns={"Confirmed_Cases":"Cases total abs.", "Deaths":"Deaths total abs.", 
                                           "New_Cases":"Cases daily abs.", "New_Deaths":"Deaths daily abs.",
@@ -27,27 +28,27 @@ df_TS_world = df_TS_world.rename(columns={"Confirmed_Cases":"Cases total abs.", 
                                           "Doses_admin_per_100":"Doses vaccine admin. / 100 persons",
                                           "GDP_pro_Kopf":"GDP per capita", "GNI_2019":"GNI per capita",
                                           "Income group":"Classification by income (World Bank)",
-                                          "new_tests":"Tests daily abs.", "total_tests":"Tests total abs."})
+                                          "new_tests":"Tests daily abs.", "total_tests":"Tests total abs.", "total_tests_rel":"Tests total %"})
 # Spalten entfernen
-df_TS_world = df_TS_world.drop(['_merge'], axis=1)
+#print(df_TS_world.columns)
+#df_TS_world = df_TS_world.drop(['_merge'], axis=1)
 
-# --------------------------------Options for Dropdowns----------------------------------
+# --------------------------------Optionen für Dropdowns----------------------------------
 # Dropdown Menü -> Optionen für County-Picker
 country_options = []
 for country in df_TS_world['Country'].unique():
     country_options.append({'label': str(country), 'value': country})
 
-# Dropdown Menü -> Optionen für y-axis-picker-line-chart
+# Dropdown Menü -> Optionen für Y-Achse
 yAxis_options = []
 for yOption in df_TS_world.columns:
     yAxis_options.append({'label': str(yOption), 'value': yOption})
 
 
 # ---------------------------------------------------------------------------------------
-
 # Funktion -> initiales Figure für Line-Chart erstellen
 def blank_fig():
-    fig = px.line(x=None, y=None)  # width=800, height=350)
+    fig = px.line(x=None, y=None)
     fig.update_layout(
          title='Graph: Line chart')
 
@@ -108,24 +109,41 @@ app.layout = html.Div(children=[
         # 1.3 Inputs Line-Chart
         html.Div(children=[
             html.Label(
-                'Choose countries and dimension:'
+                'Choose countries and dimensions:'
             ),
 
-            # Dropdown für Line-Chart -> Country-Picker
+            # Dropdown für Line-Chart -> Country-Picker 1
             dcc.Dropdown(id='country-picker-line-chart',
                          options=country_options,
-                         placeholder="Country",
+                         placeholder="Graph1: Country",
                          multi=True,
-                         style={'margin-top': '1vw'}
+                         style={'margin-top': '0.5vw'}
                          ),
 
-            # Dropdown für Line-Chart -> Wert Y-Achse
+            # Dropdown für Line-Chart -> Wert Y-Achse 1
             dcc.Dropdown(id='y-axis-picker-line-chart',
                          options=yAxis_options,
-                         placeholder="Dimension y-axis",
+                         placeholder="Graph 1: Dimension",
                          multi=False,
                          clearable=True,
-                         style={'margin-top': '1vw', 'margin-bottom': '2vw'}
+                         style={'margin-top': '0.5vw', 'margin-bottom': '1vw'}
+                         ),
+            
+            # Dropdown für Line-Chart -> Country-Picker 2
+            dcc.Dropdown(id='country-picker-line-chart-2',
+                         options=country_options,
+                         placeholder="Graph2: Country",
+                         multi=True,
+                         style={'margin-top': '0.5vw'}
+                         ),
+
+            # Dropdown für Line-Chart -> Wert Y-Achse 1
+            dcc.Dropdown(id='y-axis-picker-line-chart-2',
+                         options=yAxis_options,
+                         placeholder="Graph 2: Dimension",
+                         multi=False,
+                         clearable=True,
+                         style={'margin-top': '0.5vw', 'margin-bottom': '1vw'}
                          ),
 
             html.Label('Choose start and end date:'),
@@ -136,7 +154,7 @@ app.layout = html.Div(children=[
                 placeholder="Start date",
                 clearable=True,
                 initial_visible_month=date(2022, 1, 1),
-                style={'margin-top': '1vw'}
+                style={'margin-top': '0.5vw'}
             ),
 
             # Date-Picker Enddatum
@@ -145,7 +163,7 @@ app.layout = html.Div(children=[
                 placeholder="End date",
                 clearable=True,
                 initial_visible_month=date(2022, 1, 1),
-                style={'margin-top': '1vw'}
+                style={'margin-top': '0.5vw'}
             )
 
 
@@ -155,34 +173,63 @@ app.layout = html.Div(children=[
         # 1.4 Inputs Annotation
         html.Div(children=[
 
-            # Annotation erstellen
-            html.Label('Create annotation:'),
+            # Annotation 1 erstellen
+            html.Label('Create annotation 1:'),
 
-            # Date-Picker Datum Ereignis
+            # Date-Picker Datum Ereignis 1
             dcc.DatePickerSingle(
                 id='date-picker-line-chart-annotation',
                 placeholder="Select date",
                 clearable=True,
                 initial_visible_month=date(2022, 1, 1),
-                style={'margin-top': '1vw'}
+                style={'margin-top': '0.5vw'}
             ),
 
-            # Text Input Ereignis
+            # Text Input Ereignis 1
             dcc.Input(
                 id='textInput-line-chart',
                 placeholder='Description', 
                 type='text',
-                style={'margin-top': '1vw', 'margin-bottom': '1vw', 'width': '160px'
+                style={'margin-top': '0.5vw', 'margin-bottom': '0.5vw', 'width': '160px'
                 }
             ),
 
-            # Button : Bestätigen
+            # Button : Bestätigen 1
             html.Button('Set as start', id='button-line-chart',
                         n_clicks=0,
-                        # style={'background-color':'white',#'color':'white',
-                        #        'height':'30px','width':'200px',
-                        #        'margin-top':'1vw','margin-left':'0vw'}
-                        )
+                        ),
+            
+            # Annotation 2 erstellen
+            html.Label('Create annotation 2:',
+                       style={'margin-top': '1vw'}),
+
+            # Date-Picker Datum Ereignis 2
+            dcc.DatePickerSingle(
+                id='date-picker-line-chart-annotation-2',
+                placeholder="Select date",
+                clearable=True,
+                initial_visible_month=date(2022, 1, 1),
+                style={'margin-top': '0.5vw'}
+            ),
+
+            # Text Input Ereignis 2
+            dcc.Input(
+                id='textInput-line-chart-2',
+                placeholder='Description', 
+                type='text',
+                style={'margin-top': '0.5vw', 'margin-bottom': '0.5vw', 'width': '160px'
+                }
+            ),
+
+            # Button : Bestätigen 2
+            html.Button('Set as start', id='button-line-chart-2',
+                        n_clicks=0,
+                        ),
+            
+            # Button : Überlagern Annotaion2 auf Annotation1
+            #html.Button('Overlay Annotation 1', id='button-line-chart-overlay',
+            #            n_clicks=0, style={'margin-top': '0.5vw'}
+            #            ),
 
         ], className="two columns",
             style={'padding': '2rem', 'margin': '1rem', 'marginTop': '2rem', 'margin-left': '6rem', 'background-color': 'white'})
@@ -291,30 +338,38 @@ app.layout = html.Div(children=[
 @app.callback(Output('line-chart', 'figure'),
               Input('country-picker-line-chart', 'value'),
               Input('y-axis-picker-line-chart', 'value'),
+              Input('country-picker-line-chart-2', 'value'),
+              Input('y-axis-picker-line-chart-2', 'value'),
               Input('date-picker-line-chart-start', 'date'),
               Input('date-picker-line-chart-end', 'date'),
               Input('date-picker-line-chart-annotation', 'date'),
               Input('textInput-line-chart', 'value'),
-              Input('button-line-chart', 'n_clicks')
+              Input('button-line-chart', 'n_clicks'),
+              Input('date-picker-line-chart-annotation-2', 'date'),
+              Input('textInput-line-chart-2', 'value'),
+              Input('button-line-chart-2', 'n_clicks')
+              #Input('button-line-chart-overlay', 'n_clicks')
               )
-def update_graph(selected_country, selected_yAxis_column, selected_date_start, selected_date_end, selected_date_annotation, name_annotation, button_clicked):
+def update_graph(selected_country, selected_yAxis_column, selected_country_2, selected_yAxis_column_2, selected_date_start, selected_date_end, selected_date_annotation, name_annotation, button_clicked, selected_date_annotation_2, name_annotation_2, button_clicked_2):#, button_clicked_overlay):
+    # String-Wert aus dem Trigger holen
     ctx = dash.callback_context
     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
-
-    fig = px.line(x=None, y=None)
+    
+    # Line-Chart Figure erstellen
+    #fig = px.line(x=None, y=None)
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
+    
+    # Überschrift Line-Chart
     fig.update_layout(
-         title='Graph: Line chart')
-
-    # fig = go.Figure()
-    # fig.update_layout(
-    #     title='Überschrift Line-Chart',
-    #     template = 'seaborn'
-    #     )
-
+         title='Graph: Line chart', xaxis2= {'anchor': 'y', 'overlaying': 'x', 'side': 'top'})
+    
+    # nach ausgewählten Ländern filtern -> Fig 1
     filtered_df = df_TS_world[df_TS_world['Country'].isin(selected_country)]
+    # Min + Max Datum wählen
     date_max = df_TS_world['Date'].max()
     date_min = df_TS_world['Date'].min()
-
+    
+    # Line-Chart befüllen -> Fig 1
     for val in selected_country:
         help_df = filtered_df[filtered_df['Country'] == str(val)]
         fig.add_trace(go.Scatter(
@@ -322,13 +377,12 @@ def update_graph(selected_country, selected_yAxis_column, selected_date_start, s
             y=help_df[str(selected_yAxis_column)],
             mode="lines",
             name=str(val),
-            line=dict(width=2),
-            showlegend=True
+            line=dict(width=1),
+            showlegend=True),
+        secondary_y=False
         )
-        )
-        
-        
-        
+        # Annotation 1
+        # Wenn der Trigger vom Button-Line-Chart kommt und dessen Wert ungerade ist, dann Datum von Annotation setzen
         if triggered_id == 'button-line-chart':
             if (button_clicked % 2) != 0:
                 if selected_date_annotation is None and selected_date_end is None:
@@ -343,7 +397,22 @@ def update_graph(selected_country, selected_yAxis_column, selected_date_start, s
                     fig.update_xaxes(title_text='Date', range=(
                         selected_date_annotation, selected_date_end))
                 button_clicked = button_clicked-1
-
+        # Annotation 2
+        # Wenn der Trigger vom Button-Line-Chart kommt und dessen Wert ungerade ist, dann Datum von Annotation setzen
+        elif triggered_id == 'button-line-chart-2':
+            if (button_clicked_2 % 2) != 0:
+                if selected_date_annotation_2 is None and selected_date_end is None:
+                    fig.update_xaxes(title_text='Date', range=(date_min, date_max))
+                if selected_date_annotation_2 is not None and selected_date_end is None:
+                    fig.update_xaxes(title_text='Date', range=(
+                        selected_date_annotation_2, date_max))
+                if selected_date_annotation_2 is None and selected_date_end is not None:
+                    fig.update_xaxes(title_text='Date', range=(
+                        date_min, selected_date_end))
+                if selected_date_annotation_2 is not None and selected_date_end is not None:
+                    fig.update_xaxes(title_text='Date', range=(
+                        selected_date_annotation_2, selected_date_end))
+                button_clicked_2 = button_clicked_2-1
         else:
             # Start- und Enddatum setzen -> alle Varianten
             if selected_date_start is None and selected_date_end is None:
@@ -357,38 +426,28 @@ def update_graph(selected_country, selected_yAxis_column, selected_date_start, s
             if selected_date_start is not None and selected_date_end is not None:
                 fig.update_xaxes(title_text='Date', range=(
                     selected_date_start, selected_date_end))
-
         # Achsentitel updaten
-        fig.update_yaxes(title_text=str(selected_yAxis_column))
+        fig.update_yaxes(title_text=str(selected_yAxis_column), secondary_y=False)
         fig.update_layout(
             title={
                 'text': str(selected_yAxis_column) + ' / Date'
             }),
-
-        # Annotation setzen
+        # Annotation 1 setzen
         if selected_date_annotation is not None:
-            #print(type(selected_date_annotation))
             fig.add_vline(datetime.datetime.strptime(selected_date_annotation, '%Y-%m-%d').timestamp()*1000,
                           annotation_text=str(name_annotation), annotation_position="top right",
-                          annotation_font_color=f'#ff7f7f', #annotation_textangle=90,
+                          annotation_font_color='black',#f'#ff7f7f', #annotation_textangle=90,
                           annotation_borderpad=10,
-                          line_width=2, line_dash="dash", line_color=f'#ff7f7f'
+                          line_width=2, line_dash="dash", line_color='black',#f'#ff7f7f'
             )
-            
-            # # Annotation -> Text
-            # fig.add_annotation(
-            #     x=selected_date_annotation, y=-10, text=str(name_annotation), yanchor='bottom', showarrow=False, arrowhead=1, arrowsize=1, arrowwidth=2, arrowcolor="#635563", ax=-20, ay=-30, font=dict(size=12, color="purple", family="Roboto"), align="left",)
-
-            # # Annotation -> Linie
-            # fig.update_layout(shapes=[dict(type='line',
-            #                                yref='paper', y0=0, y1=1,
-            #                                xref='x', x0=selected_date_annotation, x1=selected_date_annotation,
-            #                                line=dict(color="MediumPurple",
-            #                                          width=1,
-            #                                          dash="dot")
-            #                                ),
-            #                           ])
-
+        # Annotation 2 setzen
+        if selected_date_annotation_2 is not None:
+            fig.add_vline(datetime.datetime.strptime(selected_date_annotation_2, '%Y-%m-%d').timestamp()*1000,
+                          annotation_text=str(name_annotation_2), annotation_position="top right",
+                          annotation_font_color='gray',#f'#ff7f7f', #annotation_textangle=90,
+                          annotation_borderpad=10,
+                          line_width=2, line_dash="dash", line_color='gray',#f'#ff7f7f'
+            )
         # Fußnote für Line-Chart
         fig.add_annotation(
         text = (f"@Enrico Spelling / 09.06.2022<br>Source: JHU CSSE")
@@ -404,6 +463,31 @@ def update_graph(selected_country, selected_yAxis_column, selected_date_start, s
         , font=dict(size=10, color="grey")
         , align="left"
         ,)
+     
+        
+    # Fig 2
+    if selected_country_2 is not None:
+        # nach ausgewählten Ländern filtern -> Fig 2
+        filtered_df_2 = df_TS_world[df_TS_world['Country'].isin(selected_country_2)]
+        # Min + Max Datum wählen
+        date_max = df_TS_world['Date'].max()
+        date_min = df_TS_world['Date'].min()
+        # Line-Chart befüllen -> Fig 2
+        for val in selected_country_2:
+            help_df_2 = filtered_df_2[filtered_df_2['Country'] == str(val)]
+            fig.add_trace(go.Scatter(
+                x=help_df_2["Date"],
+                y=help_df_2[str(selected_yAxis_column_2)],
+                mode="lines",
+                name=str(val) + " 2.axis",
+                line=dict(width=1, dash='dot'),
+                showlegend=True),
+            secondary_y=True
+            ),
+            fig.update_yaxes(
+                title_text=str(selected_yAxis_column_2), secondary_y=True, color= "gray")
+            #fig.data[1].update(xaxis='x2')    
+                 
     return fig
 
 
