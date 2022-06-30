@@ -19,19 +19,16 @@ from plotly.subplots import make_subplots
 
 # Data Import
 df_TS_world = pd.read_csv('dashboard_time_series_complete.csv', index_col=0)
-print(df_TS_world.columns)
+
 # Spalten umbenennen
 df_TS_world = df_TS_world.rename(columns={"Confirmed_Cases":"Cases total abs.", "Deaths":"Deaths total abs.", 
                                           "New_Cases":"Cases daily abs.", "New_Deaths":"Deaths daily abs.",
                                           "Doses_admin":"Doses vaccine admin. total",
-                                          "Confirmed_Cases_rel":"Cases total %", "Deaths_rel":"Deaths total %",
+                                          "Confirmed_Cases_rel":"Cases total relative", "Deaths_rel":"Deaths total relative",
                                           "Doses_admin_per_100":"Doses vaccine admin. / 100 persons",
                                           "GDP_pro_Kopf":"GDP per capita", "GNI_2019":"GNI per capita",
                                           "Income group":"Classification by income (World Bank)",
-                                          "new_tests":"Tests daily abs.", "total_tests":"Tests total abs.", "total_tests_rel":"Tests total %"})
-# Spalten entfernen
-#print(df_TS_world.columns)
-#df_TS_world = df_TS_world.drop(['_merge'], axis=1)
+                                          "new_tests":"Tests daily abs.", "total_tests":"Tests total abs.", "total_tests_rel":"Tests total relative"})
 
 # --------------------------------Optionen für Dropdowns----------------------------------
 # Dropdown Menü -> Optionen für County-Picker
@@ -84,14 +81,14 @@ app.layout = html.Div(children=[
         
         # 1.1 Anleitungs-Text
         html.Div(children=[
-            
-            # dcc.Textarea(
-            #     id='textarea-line-chart',
-            #     value='Textarea LINECHART'
-            #     #style={'width': '150px', 'height': '210px'},
-            # )
-            html.P("Text area for Line chart"
-                )
+
+            html.P(children=["Line Chart"],
+                   style={'font-size': 15, 'font-family': 'Arial Black'}
+                ),
+            html.P(children=[html.Br(),"The following input fields are available:", html.Br(),html.Br(),"Country => Set the countries", html.Br(),"Dimension => Set the dimension", html.Br(),html.Br(),"Graph 2 is optional and adds a secondary y-axis.", html.Br(),html.Br(),"Start date => Set a start date", html.Br(),"End date => Set an end date", html.Br(),html.Br(),html.Br(),"Additionally, 2 annotations can be set:", html.Br(),html.Br(),"Select date => Set the date", html.Br(),"Description => Enter a text", html.Br(),"Set as start => Sets the annotation date as start date", html.Br(),html.Br(),html.Br(),"Further functions (download, zoom...) are available by hovering over the chart toolbar."],
+                   style={'font-size': 10,
+                          'text-align': 'left'}
+               )
         ], className="two columns",
             style={'padding': '2rem', 'margin': '1rem', 'marginTop': '2rem', 'background-color': 'white'}),
 
@@ -505,6 +502,7 @@ def update_graph2(selected_xAxes, selected_yAxes, selected_size, selected_date, 
     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
     
     
+    
     # Tage addieren
     if triggered_id == 'button-plus-scatterplot':
         # Auswahl Datum
@@ -524,10 +522,19 @@ def update_graph2(selected_xAxes, selected_yAxes, selected_size, selected_date, 
             data_scatter = df_TS_world[df_TS_world['Date'] == selected_date_2]        
     else:
         if selected_date is None:
-            date_max = df_TS_world['Date'].max()
-            data_scatter = df_TS_world[df_TS_world['Date'] == date_max]
+            if selected_size == "Tests daily abs." or selected_size == "Tests total abs." or selected_size == "Tests total relative":
+                data_scatter = df_TS_world[df_TS_world['Date'] == "2022-05-01"]
+                print("Test-Data arrived-----------------------------")
+            else:
+                date_max = df_TS_world['Date'].max()
+                data_scatter = df_TS_world[df_TS_world['Date'] == date_max]
+            
         else:
             data_scatter = df_TS_world[df_TS_world['Date'] == selected_date]
+            
+            
+        
+        
 
     # alle Werte "Income group" in String umwandeln
     data_scatter['Classification by income (World Bank)'] = data_scatter['Classification by income (World Bank)'].astype(str)
@@ -552,31 +559,6 @@ def update_graph2(selected_xAxes, selected_yAxes, selected_size, selected_date, 
         
     if (log_yaxes % 2) != 0:
         fig.update_yaxes(type="log")
-    
-    # fig = go.Figure()
-    # fig.update_layout(
-    #     title='Überschrift Line-Chart',
-    #     template = 'plotly_dark'
-    #     )
-
-    # #print(type(selected_xAxes))
-    # print(data_scatter["Income group"])
-
-    # fig.add_trace(go.Scatter(
-    #         x = data_scatter[str(selected_xAxes)],
-    #         y = data_scatter[str(selected_yAxes)],
-    #         marker_size = data_scatter[str(selected_size)]*100,
-    #         # marker_color = data_scatter["Income group"],
-    #         # marker = {'color': data_scatter["Income group"],
-    #         #           'colorscale': 'Viridis',
-    #         #           'showscale':True,
-    #         #           'size': 100
-    #         #  },
-    #         mode = "markers",
-    #         name = data_scatter["Income group"].unique,
-    #         line = dict(width = 2),
-    #         showlegend = True
-    #         ))
 
     # Fußnote für Line-Chart
     fig.add_annotation(
