@@ -27,8 +27,11 @@ df_TS_world = df_TS_world.rename(columns={"Confirmed_Cases":"Cases total abs.", 
                                           "Confirmed_Cases_rel":"Cases total relative", "Deaths_rel":"Deaths total relative",
                                           "Doses_admin_per_100":"Doses vaccine admin. / 100 persons",
                                           "GDP_pro_Kopf":"GDP per capita", "GNI_2019":"GNI per capita",
-                                          "Income group":"Classification by income (World Bank)",
+                                          "Income group":"Classification by income",
                                           "new_tests":"Tests daily abs.", "total_tests":"Tests total abs.", "total_tests_rel":"Tests total relative"})
+
+# alle Werte "Income group"=0 -> löschen
+df_TS_world= df_TS_world[df_TS_world['Classification by income'].str.contains('0') == False]
 
 # --------------------------------Optionen für Dropdowns----------------------------------
 # Dropdown Menü -> Optionen für County-Picker
@@ -42,7 +45,7 @@ for yOption in df_TS_world.columns:
     yAxis_options.append({'label': str(yOption), 'value': yOption})
 
 
-# ---------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 # Funktion -> initiales Figure für Line-Chart erstellen
 def blank_fig():
     fig = px.line(x=None, y=None)
@@ -59,11 +62,27 @@ def blank_fig_scatter():
 
     return fig
 
+# Funktion -> initiales Figure für Animation erstellen
+def fig_video():
+    
+    fig = px.scatter(df_TS_world, x="GNI per capita", y="Doses vaccine admin. / 100 persons", animation_frame="Date", animation_group="Country",
+           size="Cases total relative", color="Classification by income", hover_name="Country",
+           log_x=True, size_max=55, range_x=[100,100000], range_y=[-20,350],
+           height=700, width=1400)
+    fig.update_layout(
+         title="Animation: GNI per capita / Doses vaccine admin./100 persons / Cases total relative classsified by income (world bank) from 2020-01-22 until 2022-05-31",
+         font=dict(
+             size=10))
+    # Speed control
+    fig.layout.updatemenus[0].buttons[0].args[1]["frame"]["duration"] = 10
+
+    return fig
+
 
 # Starte App
 app = dash.Dash(__name__)
 
-# ---------------------------------- LAYOUT ------------------------------------------------------------------------
+# ----------------------------------------------------- LAYOUT ---------------------------------------------------------------------------------
 # Haupt-Div
 app.layout = html.Div(children=[
     
@@ -74,7 +93,7 @@ app.layout = html.Div(children=[
                 'marginTop': '-15px', 'marginBottom': '0px'})
     ], style={'textAlign': 'left', 'margin-left':'2rem'}),
 
-    # ----------------------LINE-CHART----------------------------
+    # -------------------------------------LINE-CHART--------------------------------------------
 
     # 1 Div - Line-Chart
     html.Div(children=[
@@ -112,7 +131,7 @@ app.layout = html.Div(children=[
             # Dropdown für Line-Chart -> Country-Picker 1
             dcc.Dropdown(id='country-picker-line-chart',
                          options=country_options,
-                         placeholder="Graph1: Country",
+                         placeholder="Graph 1: Country",
                          multi=True,
                          style={'margin-top': '0.5vw'}
                          ),
@@ -129,7 +148,7 @@ app.layout = html.Div(children=[
             # Dropdown für Line-Chart -> Country-Picker 2
             dcc.Dropdown(id='country-picker-line-chart-2',
                          options=country_options,
-                         placeholder="Graph2: Country",
+                         placeholder="Graph 2: Country",
                          multi=True,
                          style={'margin-top': '0.5vw'}
                          ),
@@ -233,14 +252,19 @@ app.layout = html.Div(children=[
 
     ], className="twelve columns", style={'background-color': 'white', 'width': '80%','margin-left':'2rem','margin-top': '2rem'}),
 
-    # -------------------------SCATTERPLOT------------------------
+    # ------------------------------------SCATTERPLOT--------------------------------------------
     # 2 Div - Scatterplot
     html.Div(children=[
         
         # 2.1 Einleitung
         html.Div(children=[
-            html.P("Text area for Scatterplot"
-                )
+            html.P(children=["Scatter Plot"],
+                   style={'font-size': 15, 'font-family': 'Arial Black'}
+                ),
+            html.P(children=[html.Br(),"The following input fields are available:", html.Br(),html.Br(),"X-axes => Set the dimension for the X-axes", html.Br(),"Y-axes => Set the dimension for the Y-axes", html.Br(),"Dot size => Set the dimension for the dot size",html.Br(),html.Br(),html.Br(),"You can select a date on which the data will be displayed.", html.Br(),html.Br(),"Select date => Set the date", html.Br(),"Add a day => Press to go forward one day", html.Br(),html.Br(),html.Br(),"Additionally, you can set the state of the axes (linear or log)", html.Br(),html.Br(),"Set x -> log => Press to set x-axis as log", html.Br(),"Set y -> log => Press to set y-axis as log"],
+                   style={'font-size': 10,
+                          'text-align': 'left'}
+               )
         ], className="two columns",
             style={'padding': '2rem', 'margin': '1rem', 'marginTop': '2rem', 'background-color': 'white'}),
         
@@ -249,7 +273,6 @@ app.layout = html.Div(children=[
             dcc.Graph(
                 id='scatterplot',
                 figure=blank_fig_scatter()
-                #style={'height': '500px', 'width': '800px'}
             )
         ], className="six columns",
             style={'padding': '2rem', 'margin': '1rem', 'marginTop': '2rem', 'background-color': 'white'}),
@@ -323,7 +346,38 @@ app.layout = html.Div(children=[
 
         ], className="two columns",
             style={'padding': '2rem', 'margin': '1rem', 'marginTop': '2rem', 'margin-left': '6rem', 'background-color': 'white'})
-    ], className="twelve columns", style={'width': '80%','margin-left':'2rem','margin-top': '1rem','background-color': 'white'}),
+    ], className="twelve columns", style={'height': '200%','width': '80%','margin-left':'2rem','margin-top': '1rem','background-color': 'white'}),
+    
+    # ------------------------------------------Video-----------------------------------------------
+    # 3 Div - Video
+    html.Div(children=[
+        
+        # 2.1 Einleitung
+        html.Div(children=[
+            html.P(children=["Animation"],
+                   style={'font-size': 15, 'font-family': 'Arial Black'}
+                ),
+            html.P(children=[html.Br(),"This animation can be used to better analyze the development of the vaccine dose distribution over time. The following dimensions are defined:", html.Br(),html.Br(),"X-axes = GNI per capita", html.Br(),"Y-axes = Doses vaccine admin. / 100 persons", html.Br(),"Dot size => Corona cases total relative to population",html.Br(),html.Br(),"Press the start button to start / stop button to pause the animation"],
+                   style={'font-size': 10,
+                          'text-align': 'left'}
+               )
+        ], className="two columns",
+            style={'padding': '2rem', 'margin': '1rem', 'marginTop': '2rem', 'background-color': 'white'}),
+        
+        # 2.2 Scatterplot
+        html.Div(children=[
+            dcc.Graph(
+                id='videoplot',
+                figure=fig_video()
+                #style={'height': '300px', 'width': '500px'}
+            )
+        ], className="ten columns",
+            style={'padding': '2rem', 'margin': '1rem', 'marginTop': '2rem', 'background-color': 'white'}),
+        
+
+    ], className="twelve columns", style={'height': '200%','width': '80%','margin-left':'2rem','margin-top': '1rem','background-color': 'white'}),
+    
+    
     
     
     
@@ -353,7 +407,6 @@ def update_graph(selected_country, selected_yAxis_column, selected_country_2, se
     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
     
     # Line-Chart Figure erstellen
-    #fig = px.line(x=None, y=None)
     fig = make_subplots(specs=[[{"secondary_y": True}]])
     
     # Überschrift Line-Chart
@@ -483,11 +536,15 @@ def update_graph(selected_country, selected_yAxis_column, selected_country_2, se
             ),
             fig.update_yaxes(
                 title_text=str(selected_yAxis_column_2), secondary_y=True, color= "gray")
-            #fig.data[1].update(xaxis='x2')    
+            #fig.data[1].update(xaxis='x2')
+            fig.update_layout(
+                title={
+                    'text': str(selected_yAxis_column) + ' and '+str(selected_yAxis_column_2)+' / Date'
+                })
                  
     return fig
 
-
+#---------------------------------------------------------------------------------------------------------------------------
 # Server -> Scatterplot
 @app.callback(Output('scatterplot', 'figure'),
               Input('xAxes-scatterplot', 'value'),
@@ -533,25 +590,18 @@ def update_graph2(selected_xAxes, selected_yAxes, selected_size, selected_date, 
             data_scatter = df_TS_world[df_TS_world['Date'] == selected_date]
             
             
-        
-        
-
     # alle Werte "Income group" in String umwandeln
-    data_scatter['Classification by income (World Bank)'] = data_scatter['Classification by income (World Bank)'].astype(str)
-
-    # alle Werte "Income group"=0 -> umwandeln zu "unknown"
-    data_scatter['Classification by income (World Bank)'] = data_scatter['Classification by income (World Bank)'].replace(
-        '0', 'unknown')
+    data_scatter['Classification by income'] = data_scatter['Classification by income'].astype(str)
 
     fig = px.scatter(data_scatter, x=selected_xAxes, y=selected_yAxes,
-                     size=selected_size, hover_name="Country",
-                     log_x=False, size_max=20, color='Classification by income (World Bank)',
-                     trendline='lowess', trendline_scope='overall',
-                     trendline_color_override='rgb(201, 201, 201)')
+                      size=selected_size, hover_name="Country",
+                      log_x=False, size_max=20, color='Classification by income',
+                      trendline='lowess', trendline_scope='overall',
+                      trendline_color_override='rgb(201, 201, 201)')
     
     fig.update_layout(
         title={
-            'text': 'Date: ' + data_scatter['Date'].max()
+            'text': str(selected_xAxes) + ' / ' + str(selected_yAxes) + ' / ' + str(selected_size)+' on ' + data_scatter['Date'].max()
         })
     
     if (log_xaxes % 2) != 0:
@@ -560,7 +610,7 @@ def update_graph2(selected_xAxes, selected_yAxes, selected_size, selected_date, 
     if (log_yaxes % 2) != 0:
         fig.update_yaxes(type="log")
 
-    # Fußnote für Line-Chart
+    #Fußnote für Line-Chart
     fig.add_annotation(
     text = (f"@Enrico Spelling / 09.06.2022<br>Source: JHU CSSE")
     , showarrow=False
