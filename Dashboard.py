@@ -31,7 +31,7 @@ df_TS_world = df_TS_world.rename(columns={"Confirmed_Cases":"Cases total abs.", 
                                           "new_tests":"Tests daily abs.", "total_tests":"Tests total abs.", "total_tests_rel":"Tests total relative"})
 
 # alle Werte "Income group"=0 -> löschen
-df_TS_world= df_TS_world[df_TS_world['Classification by income'].str.contains('0') == False]
+df_TS_world['Classification by income']= df_TS_world['Classification by income'].replace('0', 'unknown')
 
 # --------------------------------Optionen für Dropdowns----------------------------------
 # Dropdown Menü -> Optionen für County-Picker
@@ -500,7 +500,7 @@ def update_graph(selected_country, selected_yAxis_column, selected_country_2, se
             )
         # Fußnote für Line-Chart
         fig.add_annotation(
-        text = (f"@Enrico Spelling / 09.06.2022<br>Source: JHU CSSE")
+        text = (f"@Enrico Spelling / Source: JHU CSSE<br>" + str(date.today()))
         , showarrow=False
         , x = 0
         , y = 0
@@ -612,7 +612,7 @@ def update_graph2(selected_xAxes, selected_yAxes, selected_size, selected_date, 
 
     #Fußnote für Line-Chart
     fig.add_annotation(
-    text = (f"@Enrico Spelling / 09.06.2022<br>Source: JHU CSSE")
+    text = (f"@Enrico Spelling / Source: JHU CSSE<br>" + str(date.today()))
     , showarrow=False
     , x = 0
     , y = -0.15
