@@ -15,6 +15,7 @@ import plotly.express as px
 import datetime
 from datetime import date
 from plotly.subplots import make_subplots
+from scipy import signal
 
 
 # Data Import
@@ -424,7 +425,9 @@ def update_graph(selected_country, selected_yAxis_column, selected_country_2, se
         help_df = filtered_df[filtered_df['Country'] == str(val)]
         fig.add_trace(go.Scatter(
             x=help_df["Date"],
-            y=help_df[str(selected_yAxis_column)],
+            # Glättung der Y-Werte mit Savitzky–Golay Filter
+            #y=signal.savgol_filter(help_df[str(selected_yAxis_column)], 51, 3),
+            y= help_df[str(selected_yAxis_column)],
             mode="lines",
             name=str(val),
             line=dict(width=1),
@@ -527,6 +530,8 @@ def update_graph(selected_country, selected_yAxis_column, selected_country_2, se
             help_df_2 = filtered_df_2[filtered_df_2['Country'] == str(val)]
             fig.add_trace(go.Scatter(
                 x=help_df_2["Date"],
+                # Glättung der Y-Werte mit Savitzky–Golay Filter
+                # y=signal.savgol_filter(help_df_2[str(selected_yAxis_column_2)], 51, 3),
                 y=help_df_2[str(selected_yAxis_column_2)],
                 mode="lines",
                 name=str(val) + " 2.axis",
