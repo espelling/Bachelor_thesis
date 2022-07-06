@@ -31,10 +31,12 @@ df_TS_world = df_TS_world.rename(columns={"Confirmed_Cases":"Cases total abs.", 
                                           "Income group":"Classification by income",
                                           "new_tests":"Tests daily abs.", "total_tests":"Tests total abs.", "total_tests_rel":"Tests total relative"})
 
-# alle Werte "Income group"=0 -> löschen
+# alle Werte "Income group" = 0 -> umbenennen
 df_TS_world['Classification by income']= df_TS_world['Classification by income'].replace('0', 'unknown')
 
-# --------------------------------Optionen für Dropdowns----------------------------------
+
+
+# ----------------------------------------------Optionen für Dropdowns----------------------------------
 # Dropdown Menü -> Optionen für County-Picker
 country_options = []
 for country in df_TS_world['Country'].unique():
@@ -46,7 +48,8 @@ for yOption in df_TS_world.columns:
     yAxis_options.append({'label': str(yOption), 'value': yOption})
 
 
-# ----------------------------------------------------------------------------------------
+
+# -----------------------------------------------initale Figures----------------------------------------
 # Funktion -> initiales Figure für Line-Chart erstellen
 def blank_fig():
     fig = px.line(x=None, y=None)
@@ -79,6 +82,8 @@ def fig_video():
 
     return fig
 
+
+#-----------------------------------------------------START----------------------------------------------
 
 # Starte App
 app = dash.Dash(__name__)
@@ -242,16 +247,14 @@ app.layout = html.Div(children=[
             html.Button('Set as start', id='button-line-chart-2',
                         n_clicks=0,
                         ),
-            
-            # Button : Überlagern Annotaion2 auf Annotation1
-            #html.Button('Overlay Annotation 1', id='button-line-chart-overlay',
-            #            n_clicks=0, style={'margin-top': '0.5vw'}
-            #            ),
 
         ], className="two columns",
             style={'padding': '2rem', 'margin': '1rem', 'marginTop': '2rem', 'margin-left': '6rem', 'background-color': 'white'})
 
     ], className="twelve columns", style={'background-color': 'white', 'width': '80%','margin-left':'2rem','margin-top': '2rem'}),
+    
+    
+    
 
     # ------------------------------------SCATTERPLOT--------------------------------------------
     # 2 Div - Scatterplot
@@ -328,13 +331,13 @@ app.layout = html.Div(children=[
         ], className="two columns",
             style={'padding': '2rem', 'margin': '1rem', 'marginTop': '2rem', 'background-color': 'white'}),
         
-        # 1.4 Inputs Annotation
+        # 2.4 Inputs Achsen-Formatierung
         html.Div(children=[
 
-            # Annotation erstellen
+            # Überschrift
             html.Label('Set axes to log:'),
 
-            # Button : Bestätigen
+            # Buttons : Log X und Y
             html.Button('Set X -> log', id='logX_scatterplot',
                         n_clicks=0,
                         style={'margin-top':'1vw'}
@@ -349,11 +352,14 @@ app.layout = html.Div(children=[
             style={'padding': '2rem', 'margin': '1rem', 'marginTop': '2rem', 'margin-left': '6rem', 'background-color': 'white'})
     ], className="twelve columns", style={'height': '200%','width': '80%','margin-left':'2rem','margin-top': '1rem','background-color': 'white'}),
     
-    # ------------------------------------------Video-----------------------------------------------
-    # 3 Div - Video
+    
+    
+    
+    # ------------------------------------------Animation-----------------------------------------------
+    # 3 Div - Animation
     html.Div(children=[
         
-        # 2.1 Einleitung
+        # 3.1 Einleitung
         html.Div(children=[
             html.P(children=["Animation"],
                    style={'font-size': 15, 'font-family': 'Arial Black'}
@@ -365,27 +371,19 @@ app.layout = html.Div(children=[
         ], className="two columns",
             style={'padding': '2rem', 'margin': '1rem', 'marginTop': '2rem', 'background-color': 'white'}),
         
-        # 2.2 Scatterplot
+        # 3.2 Animation
         html.Div(children=[
             dcc.Graph(
                 id='videoplot',
                 figure=fig_video()
-                #style={'height': '300px', 'width': '500px'}
             )
         ], className="ten columns",
             style={'padding': '2rem', 'margin': '1rem', 'marginTop': '2rem', 'background-color': 'white'}),
         
-
-    ], className="twelve columns", style={'height': '200%','width': '80%','margin-left':'2rem','margin-top': '1rem','background-color': 'white'}),
-    
-    
-    
-    
-    
-    
+    ], className="twelve columns", style={'height': '200%','width': '80%','margin-left':'2rem','margin-top': '1rem','background-color': 'white'}),   
 ])
 
-# ---------------------------------- CALLBACK ---------------------------------------------------------------
+# ------------------------------------------------ CALLBACKS ---------------------------------------------------------------
 # Server -> Line-Chart
 @app.callback(Output('line-chart', 'figure'),
               Input('country-picker-line-chart', 'value'),
@@ -562,8 +560,6 @@ def update_graph(selected_country, selected_yAxis_column, selected_country_2, se
 def update_graph2(selected_xAxes, selected_yAxes, selected_size, selected_date, button_plus, log_xaxes, log_yaxes):
     ctx = dash.callback_context
     triggered_id = ctx.triggered[0]['prop_id'].split('.')[0]
-    
-    
     
     # Tage addieren
     if triggered_id == 'button-plus-scatterplot':
