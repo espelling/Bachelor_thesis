@@ -22,14 +22,14 @@ from scipy import signal
 df_TS_world = pd.read_csv('dashboard_time_series_complete.csv', index_col=0)
 
 # Spalten umbenennen
-df_TS_world = df_TS_world.rename(columns={"Confirmed_Cases":"Cases total abs.", "Deaths":"Deaths total abs.", 
+df_TS_world = df_TS_world.rename(columns={"Confirmed_Cases":"Cases cum. abs.", "Deaths":"Deaths cum. abs.", 
                                           "New_Cases":"Cases daily abs.", "New_Deaths":"Deaths daily abs.",
-                                          "Doses_admin":"Doses vaccine admin. total",
-                                          "Confirmed_Cases_rel":"Cases total relative", "Deaths_rel":"Deaths total relative",
+                                          "Doses_admin":"Doses vaccine admin. cum.",
+                                          "Confirmed_Cases_rel":"Cases cum. relative (%)", "Deaths_rel":"Deaths cum. relative (%)",
                                           "Doses_admin_per_100":"Doses vaccine admin. / 100 persons",
-                                          "GDP_pro_Kopf":"GDP per capita", "GNI_2019":"GNI per capita",
+                                          "GDP_pro_Kopf":"GDP per capita (USD)", "GNI_2019":"GNI per capita (USD)",
                                           "Income group":"Classification by income",
-                                          "new_tests":"Tests daily abs.", "total_tests":"Tests total abs.", "total_tests_rel":"Tests total relative"})
+                                          "new_tests":"Tests daily abs.", "total_tests":"Tests cum. abs.", "total_tests_rel":"Tests cum. relative (%)"})
 
 # alle Werte "Income group" = 0 -> umbenennen
 df_TS_world['Classification by income']= df_TS_world['Classification by income'].replace('0', 'unknown')
@@ -69,12 +69,12 @@ def blank_fig_scatter():
 # Funktion -> initiales Figure für Animation erstellen
 def fig_video():
     
-    fig = px.scatter(df_TS_world, x="GNI per capita", y="Doses vaccine admin. / 100 persons", animation_frame="Date", animation_group="Country",
-           size="Cases total relative", color="Classification by income", hover_name="Country",
+    fig = px.scatter(df_TS_world, x="GNI per capita (USD)", y="Doses vaccine admin. / 100 persons", animation_frame="Date", animation_group="Country",
+           size="Cases cum. relative (%)", color="Classification by income", hover_name="Country",
            log_x=True, size_max=55, range_x=[100,100000], range_y=[-20,350],
            height=700, width=1400)
     fig.update_layout(
-         title="Animation: GNI per capita / Doses vaccine admin./100 persons / Cases total relative classsified by income (world bank) from 2020-01-22 until 2022-05-31",
+         title="Animation: GNI per capita (USD) / Doses vaccine admin./100 persons / Cases cum. relative (%) classsified by income from 2020-01-22 until 2022-05-31",
          font=dict(
              size=10))
     # Speed control
@@ -580,7 +580,7 @@ def update_graph2(selected_xAxes, selected_yAxes, selected_size, selected_date, 
             data_scatter = df_TS_world[df_TS_world['Date'] == selected_date_2]        
     else:
         if selected_date is None:
-            if selected_size == "Tests daily abs." or selected_size == "Tests total abs." or selected_size == "Tests total relative":
+            if selected_size == "Tests daily abs." or selected_size == "Tests cum. abs." or selected_size == "Tests cum. relative (%)":
                 data_scatter = df_TS_world[df_TS_world['Date'] == "2022-05-01"]
                 print("Test-Data arrived-----------------------------")
             else:
