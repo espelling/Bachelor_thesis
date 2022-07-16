@@ -3,7 +3,7 @@ A COVID-19 dashboard developed as part of my bachelor thesis, which was develope
 
 ## Instructions
 All files required for the application are located in the project folder. To start the web application, run the Dashboard.py script.
-All the data needed for the dashboard is in the dashboard_time_series_complete.csv file.
+You find all the data needed for the dashboard in the dashboard_time_series_complete.csv file.
 
 To bring the data up to date, carry out the following steps:
 1. Go to the data extraction folder an run: "download_timeSeries_Cases_JohnHopkins.py" for downloading the case data
